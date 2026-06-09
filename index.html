@@ -3,13 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/duplicate-finder/camera.svg" />
     <link rel="manifest" href="/duplicate-finder/manifest.json" />
     <title>Foto-Bereinigung</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app"></div>
+    <div class="app">
+      <div class="app-header">
+        <h1>📷 Foto-Bereinigung</h1>
+        <p>Duplikate entfernen &amp; Fotos nach Datum sortieren</p>
+      </div>
+
+      <!-- Screen 1: Setup -->
+      <div id="screen-setup" class="screen active">
+        <div class="card">
+          <div class="card-label">Quell-Ordner (mehrere möglich)</div>
+          <div id="source-list" class="folder-list"></div>
+          <button id="btn-add-source" class="btn-add">+ Ordner hinzufügen</button>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Ziel-Ordner (bereinigt)</div>
+          <div id="target-display" class="folder-item" style="cursor:pointer">
+            <span id="target-name" style="color:var(--muted)">Noch kein Ordner gewählt</span>
+            <span style="color:var(--muted)">wählen</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Ähnlichkeitserkennung</div>
+          <div class="mode-toggle">
+            <div class="mode-btn" data-mode="exact">
+              <div class="mode-title">Nur exakte</div>
+              <div class="mode-sub">schnell (~30s)</div>
+            </div>
+            <div class="mode-btn selected" data-mode="both">
+              <div class="mode-title">Exakt + Ähnliche</div>
+              <div class="mode-sub">gründlich (~10 Min)</div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-start" class="btn btn-primary" disabled>🔍 Scan starten</button>
+      </div>
+
+      <!-- Screen 2: Processing -->
+      <div id="screen-processing" class="screen">
+        <div class="card">
+          <div class="progress-item">
+            <div class="progress-header">
+              <span>Phase 1: Exakte Duplikate</span>
+              <span id="p1-status">0 / 0</span>
+            </div>
+            <div class="progress-bar"><div id="p1-fill" class="progress-fill green" style="width:0%"></div></div>
+          </div>
+          <div class="progress-item" id="p2-row" style="display:none">
+            <div class="progress-header">
+              <span>Phase 2: Ähnliche Bilder</span>
+              <span id="p2-status">0 / 0</span>
+            </div>
+            <div class="progress-bar"><div id="p2-fill" class="progress-fill blue" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="stats-grid">
+            <div><div id="stat-exact" class="stat-value green">0</div><div class="stat-label">exakte Duplikate</div></div>
+            <div><div id="stat-similar" class="stat-value blue">0</div><div class="stat-label">ähnliche Bilder</div></div>
+          </div>
+        </div>
+
+        <div class="eta" id="eta-text">Bitte warten...</div>
+      </div>
+
+      <!-- Screen 3: Results -->
+      <div id="screen-results" class="screen">
+        <div class="card">
+          <div class="stats-grid">
+            <div><div id="res-scanned" class="stat-value">0</div><div class="stat-label">gescannt</div></div>
+            <div><div id="res-unique" class="stat-value green">0</div><div class="stat-label">einzigartig</div></div>
+            <div><div id="res-exact" class="stat-value red">0</div><div class="stat-label">exakte Dups.</div></div>
+            <div><div id="res-similar" class="stat-value orange">0</div><div class="stat-label">ähnliche Dups.</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Ziel-Struktur</div>
+          <div id="folder-preview" class="folder-tree"></div>
+        </div>
+
+        <button id="btn-copy" class="btn btn-primary">📋 Fotos in Ziel-Ordner kopieren</button>
+        <div class="card" id="copy-progress-card" style="display:none;margin-top:14px">
+          <div class="progress-item">
+            <div class="progress-header"><span>Kopiere...</span><span id="copy-status">0 / 0</span></div>
+            <div class="progress-bar"><div id="copy-fill" class="progress-fill green" style="width:0%"></div></div>
+          </div>
+        </div>
+        <button id="btn-restart" class="btn btn-secondary" style="margin-top:10px">Neu starten</button>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
