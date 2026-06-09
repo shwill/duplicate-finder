@@ -60,4 +60,24 @@ describe('connectedComponents', () => {
   it('empty input → empty output', () => {
     expect(connectedComponents([], 10)).toEqual([])
   })
+
+  it('two hashes at exactly the threshold distance → one component', () => {
+    // 10 bits differ → distance exactly equals threshold 10 → should be grouped (<=)
+    const entries = [
+      { hash: makeHash([]) },
+      { hash: makeHash([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) }
+    ]
+    const result = connectedComponents(entries, 10)
+    expect(result).toHaveLength(1)
+  })
+
+  it('two hashes one step above the threshold → two singletons', () => {
+    // 11 bits differ → distance 11 > threshold 10 → should not be grouped
+    const entries = [
+      { hash: makeHash([]) },
+      { hash: makeHash([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) }
+    ]
+    const result = connectedComponents(entries, 10)
+    expect(result).toHaveLength(2)
+  })
 })
