@@ -1,5 +1,6 @@
 import { pickSourceFolders, pickTargetFolder, collectImageFiles } from './filesystem.js'
 import { copyUniqueFiles } from './organizer.js'
+import { initReview } from './review.js'
 
 // State
 let sourceHandles = []
@@ -78,11 +79,9 @@ async function startScan() {
 
   $('p2-row').style.display = selectedMode === 'both' ? 'block' : 'none'
 
-  // Collect all file handles
   const allHandles = await collectImageFiles(sourceHandles)
   const total = allHandles.length
 
-  // Start worker
   const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
 
   worker.postMessage({ type: 'start', handles: allHandles, mode: selectedMode })
@@ -110,10 +109,20 @@ async function startScan() {
     }
 
     if (data.type === 'done') {
-      uniqueHandles = data.uniqueHandles
-      scanStats = data.stats
+      const { groups, autoKeptHandles, stats } = data
+      scanStats = stats
       worker.terminate()
-      showResults()
+
+      if (groups.length === 0) {
+        uniqueHandles = autoKeptHandles
+        showResults()
+      } else {
+        showScreen('review')
+        initReview(groups, autoKeptHandles, (allKept) => {
+          uniqueHandles = allKept
+          showResults()
+        })
+      }
     }
 
     if (data.type === 'error') {
@@ -125,13 +134,14 @@ async function startScan() {
 }
 
 async function showResults() {
-  const { scanned, exact, similar } = scanStats
-  const unique = scanned - exact - similar
+  const { scanned, exact } = scanStats
+  const unique = uniqueHandles.length
+  const similar = scanned - exact - unique
 
   $('res-scanned').textContent = scanned
   $('res-unique').textContent = unique
   $('res-exact').textContent = exact
-  $('res-similar').textContent = similar
+  $('res-similar').textContent = Math.max(0, similar)
 
   await buildFolderPreview()
   showScreen('results')
