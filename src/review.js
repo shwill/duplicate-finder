@@ -14,6 +14,9 @@ export async function initReview(groups, autoKeptHandles, onComplete) {
   _groupIndex = 0
   _keptHandles = []
   _onComplete = onComplete
+  if (!groups.length) { _onComplete([..._autoKeptHandles]); return }
+  _objectURLs.forEach(url => URL.revokeObjectURL(url))
+  _objectURLs = []
   await renderGroup(0)
 }
 
@@ -61,16 +64,19 @@ async function renderGroup(idx) {
     card.setAttribute('aria-pressed', String(isSelected))
     card.innerHTML = `
       <div class="review-thumb">
-        <img src="${url}" alt="${file.name}" loading="lazy" />
+        <img loading="lazy" />
         <div class="review-pill ${isSelected ? 'keep' : 'skip'}">${isSelected ? '✓ BEHALTEN' : 'ÜBERSPRINGEN'}</div>
       </div>
       <div class="review-meta">
-        <div class="review-filename">${file.name}</div>
+        <div class="review-filename"></div>
         <div class="review-info">${group.widths[i]} × ${group.heights[i]} px</div>
         <div class="review-info">${sizeMB} MB · ${date}</div>
         <div class="review-badge${isSuggested ? ' original' : ''}">${isSuggested ? 'Originalauflösung' : simPct + '% ähnlich'}</div>
       </div>
     `
+    card.querySelector('img').src = url
+    card.querySelector('img').alt = file.name
+    card.querySelector('.review-filename').textContent = file.name
     card.addEventListener('click', () => toggleCard(card, i))
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCard(card, i) } })
     grid.appendChild(card)
@@ -99,7 +105,7 @@ function toggleCard(card, idx) {
 function keepAll() {
   const group = _groups[_groupIndex]
   for (let i = 0; i < group.members.length; i++) _selections.add(i)
-  $('review-grid').querySelectorAll('.review-card').forEach((card, i) => {
+  $('review-grid').querySelectorAll('.review-card').forEach((card) => {
     card.classList.add('selected')
     const pill = card.querySelector('.review-pill')
     pill.className = 'review-pill keep'
