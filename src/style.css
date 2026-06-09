@@ -202,7 +202,7 @@ body {
 }
 
 .review-pill.keep { background: var(--green); color: #0d2010; }
-.review-pill.skip { background: var(--border); color: var(--muted); }
+.review-pill.skip { background: var(--border); color: var(--text); }
 
 .review-meta {
   background: var(--surface);
