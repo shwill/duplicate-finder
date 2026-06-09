@@ -116,6 +116,8 @@ function keepAll() {
 }
 
 async function advance() {
+  if (!_groups.length || !_onComplete) return
+
   const group = _groups[_groupIndex]
   for (const idx of _selections) _keptHandles.push(group.members[idx])
 
@@ -125,7 +127,7 @@ async function advance() {
   } else {
     _objectURLs.forEach(url => URL.revokeObjectURL(url))
     _objectURLs = []
-    _onComplete([..._keptHandles, ..._autoKeptHandles])
+    await _onComplete([..._keptHandles, ..._autoKeptHandles])
   }
 }
 
@@ -151,6 +153,9 @@ export function cancelReview() {
   _objectURLs.forEach(url => URL.revokeObjectURL(url))
   _objectURLs = []
   _groups = []
+  _autoKeptHandles = []
   _keptHandles = []
+  _selections = new Set()
+  _groupIndex = 0
   _onComplete = null
 }
