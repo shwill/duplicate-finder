@@ -1,6 +1,6 @@
 import { pickSourceFolders, pickTargetFolder, collectImageFiles } from './filesystem.js'
 import { copyUniqueFiles } from './organizer.js'
-import { initReview } from './review.js'
+import { initReview, cancelReview } from './review.js'
 
 // State
 let sourceHandles = []
@@ -86,6 +86,12 @@ async function startScan() {
 
   worker.postMessage({ type: 'start', handles: allHandles, mode: selectedMode })
 
+  worker.onerror = (e) => {
+    worker.terminate()
+    alert(`Worker-Fehler: ${e.message}`)
+    showScreen('setup')
+  }
+
   worker.onmessage = ({ data }) => {
     if (data.type === 'phase1-progress') {
       const pct = Math.round((data.current / total) * 100)
@@ -110,17 +116,23 @@ async function startScan() {
 
     if (data.type === 'done') {
       const { groups, autoKeptHandles, stats } = data
+      if (!Array.isArray(groups)) {
+        worker.terminate()
+        alert('Fehler: ungültige Worker-Antwort')
+        showScreen('setup')
+        return
+      }
       scanStats = stats
       worker.terminate()
 
       if (groups.length === 0) {
         uniqueHandles = autoKeptHandles
-        showResults()
+        showResults().catch(err => { alert(`Fehler: ${err.message}`); showScreen('setup') })
       } else {
         showScreen('review')
-        initReview(groups, autoKeptHandles, (allKept) => {
+        initReview(groups, autoKeptHandles, async (allKept) => {
           uniqueHandles = allKept
-          showResults()
+          await showResults()
         })
       }
     }
@@ -179,6 +191,7 @@ $('btn-copy').addEventListener('click', async () => {
 })
 
 $('btn-restart').addEventListener('click', () => {
+  cancelReview()
   sourceHandles = []; targetHandle = null; uniqueHandles = []; scanStats = {}
   selectedMode = 'both'
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'))

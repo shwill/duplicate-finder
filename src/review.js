@@ -146,3 +146,11 @@ function updateActions() {
   $('btn-keep-all').addEventListener('click', keepAll)
   $('btn-advance').addEventListener('click', advance)
 }
+
+export function cancelReview() {
+  _objectURLs.forEach(url => URL.revokeObjectURL(url))
+  _objectURLs = []
+  _groups = []
+  _keptHandles = []
+  _onComplete = null
+}
