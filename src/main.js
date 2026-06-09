@@ -94,16 +94,18 @@ async function startScan() {
       $('p1-status').textContent = `${data.current} / ${total}`
       $('stat-exact').textContent = data.exactDuplicates
       const elapsed = (Date.now() - startTime) / 1000
-      const eta = Math.round((elapsed / data.current) * (total - data.current))
-      $('eta-text').textContent = eta > 5 ? `Phase 1: noch ca. ${eta}s...` : 'Fast fertig...'
+      if (data.current > 0) {
+        const eta = Math.round((elapsed / data.current) * (total - data.current))
+        $('eta-text').textContent = eta > 5 ? `Phase 1: noch ca. ${eta}s...` : 'Fast fertig...'
+      }
     }
 
     if (data.type === 'phase2-progress') {
       $('p1-fill').style.width = '100%'
       $('p1-status').textContent = `${total} / ${total} ✓`
-      const pct = Math.round((data.current / total) * 100)
+      const pct = Math.round((data.current / data.total) * 100)
       $('p2-fill').style.width = `${pct}%`
-      $('p2-status').textContent = `${data.current} / ${total}`
+      $('p2-status').textContent = `${data.current} / ${data.total}`
       $('stat-similar').textContent = data.similarDuplicates
     }
 
@@ -122,7 +124,7 @@ async function startScan() {
   }
 }
 
-function showResults() {
+async function showResults() {
   const { scanned, exact, similar } = scanStats
   const unique = scanned - exact - similar
 
@@ -131,7 +133,7 @@ function showResults() {
   $('res-exact').textContent = exact
   $('res-similar').textContent = similar
 
-  buildFolderPreview()
+  await buildFolderPreview()
   showScreen('results')
 }
 
@@ -168,6 +170,9 @@ $('btn-copy').addEventListener('click', async () => {
 
 $('btn-restart').addEventListener('click', () => {
   sourceHandles = []; targetHandle = null; uniqueHandles = []; scanStats = {}
+  selectedMode = 'both'
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'))
+  document.querySelector('.mode-btn[data-mode="both"]').classList.add('selected')
   renderSourceList()
   $('target-name').textContent = 'Noch kein Ordner gewählt'
   $('target-name').style.color = 'var(--muted)'
