@@ -1,0 +1,21 @@
+{
+  "name": "Foto-Bereinigung",
+  "short_name": "Foto-Bereinigung",
+  "description": "Duplikate entfernen und Fotos nach Datum sortieren",
+  "start_url": "/duplicate-finder/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#64ffda",
+  "icons": [
+    {
+      "src": "/duplicate-finder/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/duplicate-finder/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
